@@ -45,6 +45,8 @@ namespace Sitecore.Support.ItemWebApi.Pipelines.Search
       " OR "
     };
 
+    private bool SkipMakeWildcard = false;
+
     #endregion
 
     #region Public methods
@@ -54,6 +56,14 @@ namespace Sitecore.Support.ItemWebApi.Pipelines.Search
     public override void Process([NotNull] SearchArgs args)
     {
       Assert.ArgumentNotNull(args, "args");
+      if (args.LanguageName.StartsWith("zh"))
+      {
+        SkipMakeWildcard = true;
+      }
+      else
+      {
+        SkipMakeWildcard = false;
+      }
 
       args.Queryable = this.Parse(args.ProviderSearchContext, args.SearchText);
     }
@@ -73,6 +83,10 @@ namespace Sitecore.Support.ItemWebApi.Pipelines.Search
       while (text.IndexOf("  ", StringComparison.Ordinal) >= 0)
       {
         text = text.Replace("  ", " ");
+      }
+      if (SkipMakeWildcard)
+      {
+        return text.Trim();
       }
 
       return text.Trim().Replace(" ", "* ") + "*";
